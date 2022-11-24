@@ -37,12 +37,32 @@ async function run() {
     try {
         const categoryCollection = client.db('waveyJAM').collection('categories');
         const productCollection = client.db('waveyJAM').collection('products');
+        const userCollection = client.db('waveyJAM').collection('users');
 
         app.get('/categories', async (req, res) => {
             const query = {}
             const cursor = categoryCollection.find(query);
             const categories = await cursor.toArray();
             res.send(categories);
+        });
+
+        //users
+        app.get('/jwt', async (req, res) => {
+            const email = req.query.email;
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            if (user) {
+                const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1h' })
+                return res.send({ accessToken: token });
+            }
+            res.status(403).send({ accessToken: '' })
+        });
+
+        app.post('/users', async (req, res) => {
+            const user = req.body;
+            console.log(user);
+            const result = await userCollection.insertOne(user);
+            res.send(result);
         });
 
     } finally {
