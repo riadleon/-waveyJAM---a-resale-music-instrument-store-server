@@ -64,6 +64,29 @@ async function run() {
             const result = await userCollection.insertOne(user);
             res.send(result);
         });
+        app.post("/products", async (req, res) => {
+            try {
+                const result = await productCollection.insertOne(req.body);
+
+                if (result.insertedId) {
+                    res.send({
+                        success: true,
+                        message: `Successfully created the ${req.body.name} with id ${result.insertedId}`,
+                    });
+                } else {
+                    res.send({
+                        success: false,
+                        error: "Couldn't create the product",
+                    });
+                }
+            } catch (error) {
+                console.log(error.name.bgRed, error.message.bold);
+                res.send({
+                    success: false,
+                    error: error.message,
+                });
+            }
+        });
 
     } finally {
 
