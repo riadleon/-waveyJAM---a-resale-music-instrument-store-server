@@ -45,6 +45,14 @@ async function run() {
             const categories = await cursor.toArray();
             res.send(categories);
         });
+        app.get('/categories/:id', async (req, res) => {
+            const id = req.params.category_id;
+            const query = { _id: id };
+            const product = await productCollection.findOne(query);
+            res.send(product);
+        })
+
+
 
         //users
         app.get('/jwt', async (req, res) => {
