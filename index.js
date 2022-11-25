@@ -38,6 +38,7 @@ async function run() {
         const categoryCollection = client.db('waveyJAM').collection('categories');
         const productCollection = client.db('waveyJAM').collection('products');
         const userCollection = client.db('waveyJAM').collection('users');
+        const bookingsCollection = client.db('waveyJAM').collection('productBooking');
 
         app.get('/categories', async (req, res) => {
             const query = {}
@@ -146,6 +147,27 @@ async function run() {
             const cursor = productCollection.find(query);
             const products = await cursor.toArray();
             res.send(products);
+        });
+
+        //product Booking
+        app.post('/productBooking', async (req, res) => {
+            const productBooking = req.body;
+            console.log(productBooking);
+            const query = {
+                // appointmentDate: productBooking.appointmentDate,
+                email: productBooking.email,
+                product: productBooking.product
+            }
+
+            // const alreadyBooked = await bookingsCollection.find(query).toArray();
+
+            // if (alreadyBooked.length) {
+            //     const message = `You already have a productBooking on ${productBooking.appointmentDate}`
+            //     return res.send({ acknowledged: false, message })
+            // }
+
+            const result = await bookingsCollection.insertOne(productBooking);
+            res.send(result);
         });
 
     } finally {
