@@ -100,7 +100,7 @@ async function run() {
             res.send({ isBuyer: user?.role === 'buyer' });
         })
 
-        
+
 
 
         app.get('/users/seller/:email', async (req, res) => {
@@ -162,14 +162,14 @@ async function run() {
 
         //product Booking
         app.get('/productBooking', async (req, res) => {
-            const email = req.query.email;
+            // const email = req.query.email;
             // const decodedEmail = req.decoded.email;
 
             // if (email !== decodedEmail) {
             //     return res.status(403).send({ message: 'forbidden access' });
             // }
 
-            const query = { email: email };
+            const query = {};
             const productBooking = await bookingsCollection.find(query).toArray();
             res.send(productBooking);
         })
