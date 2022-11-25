@@ -11,7 +11,7 @@ const port = process.env.PORT || 8000;
 app.use(cors());
 app.use(express.json());
 
-const uri = "mongodb://localhost:27017";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.afq9fgb.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 function verifyJWT(req, res, next) {
@@ -74,10 +74,17 @@ async function run() {
             res.send(result);
         });
 
+        //get all buyer & seller
         app.get('/users', async (req, res) => {
-            const query = {};
-            const users = await userCollection.find(query).toArray();
-            res.send(users);
+            let query = {};
+            if (req.query.role) {
+                query = {
+                    role: req.query.role
+                };
+            }
+            const cursor = userCollection.find(query);
+            const user = await cursor.toArray();
+            res.send(user);
         });
 
         app.get('/users/admin/:email', async (req, res) => {
@@ -92,6 +99,10 @@ async function run() {
             const user = await userCollection.findOne(query);
             res.send({ isBuyer: user?.role === 'buyer' });
         })
+
+        
+
+
         app.get('/users/seller/:email', async (req, res) => {
             const email = req.params.email;
             const query = { email }
@@ -150,6 +161,19 @@ async function run() {
         });
 
         //product Booking
+        app.get('/productBooking', async (req, res) => {
+            const email = req.query.email;
+            // const decodedEmail = req.decoded.email;
+
+            // if (email !== decodedEmail) {
+            //     return res.status(403).send({ message: 'forbidden access' });
+            // }
+
+            const query = { email: email };
+            const productBooking = await bookingsCollection.find(query).toArray();
+            res.send(productBooking);
+        })
+
         app.post('/productBooking', async (req, res) => {
             const productBooking = req.body;
             console.log(productBooking);
