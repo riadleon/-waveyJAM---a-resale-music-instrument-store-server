@@ -48,7 +48,7 @@ async function run() {
         app.get('/categories/:id', async (req, res) => {
             const id = req.params.id;
             const query = { id: id };
-            const product = await productCollection.findOne(query);
+            const product = await productCollection.find(query).toArray();
             res.send(product);
         })
 
@@ -125,8 +125,24 @@ async function run() {
                 });
             }
         });
+        // app.get('/products', async (req, res) => {
+        //     const query = {}
+        //     const cursor = productCollection.find(query);
+        //     const products = await cursor.toArray();
+        //     res.send(products);
+        // });
+
         app.get('/products', async (req, res) => {
-            const query = {}
+
+
+
+            let query = {};
+
+            if (req.query.email) {
+                query = {
+                    email: req.query.email
+                }
+            }
             const cursor = productCollection.find(query);
             const products = await cursor.toArray();
             res.send(products);
