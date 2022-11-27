@@ -40,6 +40,7 @@ async function run() {
         const userCollection = client.db('waveyJAM').collection('users');
         const bookingsCollection = client.db('waveyJAM').collection('productBooking');
         const advertiseCollection = client.db('waveyJAM').collection('advertise');
+        const paymentsCollection = client.db('waveyJAM').collection('payment');
 
         app.get('/categories', async (req, res) => {
             const query = {}
@@ -122,7 +123,7 @@ async function run() {
 
 
 
-        app.post("/products", async (req, res) => {
+        app.post("/products", verifyJWT, async (req, res) => {
             try {
                 const result = await productCollection.insertOne(req.body);
 
@@ -181,6 +182,12 @@ async function run() {
             const productBooking = await bookingsCollection.find(query).toArray();
             res.send(productBooking);
         })
+        app.get('/productBooking/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const productBooking = await bookingsCollection.findOne(query);
+            res.send(productBooking);
+        })
 
         app.post('/productBooking', async (req, res) => {
             const productBooking = req.body;
@@ -201,6 +208,40 @@ async function run() {
             const result = await bookingsCollection.insertOne(productBooking);
             res.send(result);
         });
+
+        //payment
+
+        app.post('/create-payment-intent', async (req, res) => {
+            const booking = req.body;
+            const price = booking.price;
+            const amount = price * 100;
+
+            const paymentIntent = await stripe.paymentIntents.create({
+                currency: 'usd',
+                amount: amount,
+                "payment_method_types": [
+                    "card"
+                ]
+            });
+            res.send({
+                clientSecret: paymentIntent.client_secret,
+            });
+        });
+
+        app.post('/payments', async (req, res) => {
+            const payment = req.body;
+            const result = await paymentsCollection.insertOne(payment);
+            const id = payment.bookingId
+            const filter = { _id: ObjectId(id) }
+            const updatedDoc = {
+                $set: {
+                    paid: true,
+                    transactionId: payment.transactionId
+                }
+            }
+            const updatedResult = await bookingsCollection.updateOne(filter, updatedDoc)
+            res.send(result);
+        })
 
         //advertise
         app.post('/advertise', async (req, res) => {
