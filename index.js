@@ -39,6 +39,7 @@ async function run() {
         const productCollection = client.db('waveyJAM').collection('products');
         const userCollection = client.db('waveyJAM').collection('users');
         const bookingsCollection = client.db('waveyJAM').collection('productBooking');
+        const advertiseCollection = client.db('waveyJAM').collection('advertise');
 
         app.get('/categories', async (req, res) => {
             const query = {}
@@ -62,9 +63,9 @@ async function run() {
             const user = await userCollection.findOne(query);
             if (user) {
                 const token = jwt.sign({ email }, process.env.ACCESS_TOKEN, { expiresIn: '1h' })
-                return res.send({ accessToken: token });
+                return res.send({ waveyToken: token });
             }
-            res.status(403).send({ accessToken: '' })
+            res.status(403).send({ waveyToken: '' })
         });
 
         app.post('/users', async (req, res) => {
@@ -86,6 +87,13 @@ async function run() {
             const user = await cursor.toArray();
             res.send(user);
         });
+
+        // app.delete('/users/:id', async (req, res) => {
+        //     const id = req.params.id;
+        //     const query = { _id: ObjectId(id) };
+        //     const user = await userCollection.findOne(query);
+        //     res.send(user);
+        // });
 
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
@@ -193,6 +201,22 @@ async function run() {
             const result = await bookingsCollection.insertOne(productBooking);
             res.send(result);
         });
+
+        //advertise
+        app.post('/advertise', async (req, res) => {
+            const user = req.body;
+            const result = await advertiseCollection.insertOne(user);
+            res.send(result);
+            console.log('Data added successfully...');
+        });
+        app.get('/advertise', async (req, res) => {
+            const query = {}
+            const cursor = advertiseCollection.find(query);
+            const categories = await cursor.toArray();
+            res.send(categories);
+        });
+
+
 
     } finally {
 
