@@ -69,6 +69,24 @@ async function run() {
             res.status(403).send({ waveyToken: '' })
         });
 
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email
+            const user = req.body
+
+            const filter = { email: email }
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: user,
+            }
+            const result = await usersCollection.updateOne(filter, updateDoc, options)
+
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+                expiresIn: '1d',
+            })
+            console.log(result)
+            res.send({ result, token })
+        })
+
         app.post('/users', async (req, res) => {
             const user = req.body;
             console.log(user);
@@ -178,13 +196,13 @@ async function run() {
             //     return res.status(403).send({ message: 'forbidden access' });
             // }
 
-            let query = { };
+            let query = {};
             const email = req.query.email
             if (email) {
                 query = {
-                  email: email,
+                    email: email,
                 }
-              }
+            }
             const productBooking = await bookingsCollection.find(query).toArray();
             res.send(productBooking);
         })
