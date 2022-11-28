@@ -178,7 +178,13 @@ async function run() {
             //     return res.status(403).send({ message: 'forbidden access' });
             // }
 
-            const query = {};
+            let query = { };
+            const email = req.query.email
+            if (email) {
+                query = {
+                  email: email,
+                }
+              }
             const productBooking = await bookingsCollection.find(query).toArray();
             res.send(productBooking);
         })
