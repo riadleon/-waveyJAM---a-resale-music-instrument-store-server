@@ -69,22 +69,22 @@ async function run() {
             res.status(403).send({ waveyToken: '' })
         });
 
-        app.put('/user/:email', async (req, res) => {
-            const email = req.params.email
+        app.put('/users',  async (req, res) => {
+            const role = req.params.role
             const user = req.body
 
-            const filter = { email: email }
+            const filter = { role: role }
             const options = { upsert: true }
             const updateDoc = {
                 $set: user,
             }
-            const result = await usersCollection.updateOne(filter, updateDoc, options)
+            const result = await userCollection.updateOne(filter, updateDoc, options)
 
-            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-                expiresIn: '1d',
-            })
+            // const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+            //     expiresIn: '1d',
+            // })
             console.log(result)
-            res.send({ result, token })
+            res.send({ result })
         })
 
         app.post('/users', async (req, res) => {
@@ -106,13 +106,19 @@ async function run() {
             const user = await cursor.toArray();
             res.send(user);
         });
+        app.get('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const user = await userCollection.findOne(query);
+            res.send(user);
+        });
 
-        // app.delete('/users/:id', async (req, res) => {
-        //     const id = req.params.id;
-        //     const query = { _id: ObjectId(id) };
-        //     const user = await userCollection.findOne(query);
-        //     res.send(user);
-        // });
+        app.delete('/users/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const user = await userCollection.deleteOne(query);
+            res.send(user);
+        });
 
         app.get('/users/admin/:email', async (req, res) => {
             const email = req.params.email;
@@ -217,17 +223,12 @@ async function run() {
             const productBooking = req.body;
             console.log(productBooking);
             const query = {
-                // appointmentDate: productBooking.appointmentDate,
+
                 email: productBooking.email,
                 product: productBooking.product
             }
 
-            // const alreadyBooked = await bookingsCollection.find(query).toArray();
 
-            // if (alreadyBooked.length) {
-            //     const message = `You already have a productBooking on ${productBooking.appointmentDate}`
-            //     return res.send({ acknowledged: false, message })
-            // }
 
             const result = await bookingsCollection.insertOne(productBooking);
             res.send(result);
